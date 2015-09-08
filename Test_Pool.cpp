@@ -6,6 +6,7 @@ extern "C"
 	#include <fcntl.h>
 	#include <string.h>
 	#include <errno.h>
+	#include <time.h>
 }
 #include "MyThreadPool.h"
 
@@ -48,7 +49,7 @@ public:
 					bytes_out=write(fd_out,buf,bytes_in);
 					if(bytes_out!=bytes_in)
 					{
-						cout<<"copy error!"<<endl;
+						cerr<<"copy error!"<<endl;
 						return;
 					}
 					lenbyte-=bytes_in;
@@ -60,7 +61,7 @@ public:
 						bytes_out=write(fd_out,buf,bytes_in);
 						if(bytes_out!=bytes_in)
 						{
-							cout<<"copy error"<<endl;
+							cerr<<"copy error"<<endl;
 							return;
 						}
 						lenbyte-=bytes_in;
@@ -71,36 +72,36 @@ public:
 			}
 			else
 			{
-				cout<<"open or lseek desfile failed:"<<strerror(errno)<<endl;
+				cerr<<"open or lseek desfile failed:"<<strerror(errno)<<endl;
 			}
 			close(fd_in);			
 		}
 		else
 		{
-			cout<<"open or lseek srcfile failed:"<<strerror(errno)<<endl;
+			cerr<<"open or lseek srcfile failed:"<<strerror(errno)<<endl;
 		}
 	}
 };
 
 int main()
 {
-	ThreadPool pool;
+	ThreadPool pool(2);
 
-	Task t1,t2,t3,t4,t5,t6,t7,t8;
-	pool.add_task(&t1);
-	pool.add_task(&t2);
-	pool.add_task(&t3);
-	pool.add_task(&t4);
-	pool.add_task(&t5);
-	pool.add_task(&t6);
-	pool.add_task(&t7);
-	pool.add_task(&t8);
-	pool.run();
+//	Task t1,t2,t3,t4,t5,t6,t7,t8;
+//	pool.add_task(&t1);
+//	pool.add_task(&t2);
+//	pool.add_task(&t3);
+//	pool.add_task(&t4);
+//	pool.add_task(&t5);
+//	pool.add_task(&t6);
+//	pool.add_task(&t7);
+//	pool.add_task(&t8);
+//	pool.run();
 
 	struct stat buf;
 	if(stat(srcfile.c_str(),&buf)==0)
 	{
-		cout<<buf.st_size/1024/1024<<endl;
+		cout<<"文件大小(M):"<<buf.st_size/1024/1024<<endl;
 		long long srclen=buf.st_size;
 		mode_t mode=S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP;
 		if(open(desfile.c_str(),O_WRONLY|O_CREAT|O_TRUNC,mode)!=-1)
@@ -125,20 +126,26 @@ int main()
 						break;
 					}
 				}
+				time_t time1,time2;
+				time(&time1);
 				pool.run();
+				time(&time2);
+				cout<<"耗时(秒):"<<time2-time1<<endl;
 			}
 			else
 			{
-				cout<<"truncate failed: "<<strerror(errno)<<endl;
+				cerr<<"truncate failed: "<<strerror(errno)<<endl;
 			}
 
 		}
 		else
 		{
-			cout<<"open desfile failed: "<<strerror(errno)<<endl;
+			cerr<<"open desfile failed: "<<strerror(errno)<<endl;
 		}
 	}
-
-	cout<<"Main over!"<<endl;
+	else
+	{
+		cerr<<"stat src file error"<<endl;
+	}
 
 }

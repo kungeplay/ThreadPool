@@ -23,7 +23,7 @@ ThreadPool::ThreadPool(int n):currentCount(0)
 		}
 		catch (exception &ex)
 		{	
-			cout<<"创建线程失败:"<<ex.what()<<endl;
+			cerr<<"创建线程失败:"<<ex.what()<<endl;
 			delete thread;
 			continue;
 		}

@@ -22,19 +22,24 @@ void *MyThread::threadrun(void *arg)
 	MyThread *const pthis=reinterpret_cast<MyThread *>(arg);
 	while(true)
 	{
-		int signop=0;
-		sigwait(&threadset,&signop);
-		pthis->task->run();
+		int signop=0,err;
+		err=sigwait(&threadset,&signop);
+		
+		if(0==err&&signop==SIGUSR1)
+		{
+			pthis->task->run();
 
 
-		pthread_mutex_lock(&(pthis->pool->mutex));
+			pthread_mutex_lock(&(pthis->pool->mutex));
 
-		pthis->pool->BusyThreadList.remove(pthis);
-		pthis->pool->IdleThreadList.push(pthis);
+			pthis->pool->BusyThreadList.remove(pthis);
+			pthis->pool->IdleThreadList.push(pthis);
 
-		pthread_mutex_unlock(&(pthis->pool->mutex));
+			pthread_mutex_unlock(&(pthis->pool->mutex));
 
-		pthread_cond_signal(&(pthis->pool->cond));
+			pthread_cond_signal(&(pthis->pool->cond));
+		}
+
 
 	}
 }
